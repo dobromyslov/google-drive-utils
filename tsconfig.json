@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es2018"
+    ],
+    "module": "commonjs",
+    "declaration": true,
+    "target": "es2018",
+    "sourceMap": true,
+    "allowJs": true,
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "newLine": "lf",
+    "stripInternal": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "compileOnSave": true,
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
