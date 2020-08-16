@@ -1,6 +1,7 @@
 import {drive_v3, google} from 'googleapis';
 import {drive} from 'googleapis/build/src/apis/drive';
 import {GoogleAuth, GoogleAuthOptions, OAuth2Client} from 'google-auth-library';
+import {Readable} from 'stream';
 
 export class GoogleDriveUtils {
   /**
@@ -122,5 +123,18 @@ export class GoogleDriveUtils {
       // eslint-disable-next-line no-await-in-loop
       await this.deleteFile(fileId);
     }
+  }
+
+  /**
+   * Exports Google Sheets file in XLS format and returns read stream.
+   * @param fileId Google Sheets file ID.
+   */
+  public async exportAsXlsxReadStram(fileId: string): Promise<Readable> {
+    const result = await this.api.files.export({
+      fileId,
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    }, {responseType: 'stream'});
+
+    return result.data;
   }
 }
