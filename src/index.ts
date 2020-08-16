@@ -70,7 +70,7 @@ export class GoogleDriveUtils {
    * @param filename name to search
    * @param directoryId parent directory to search file in
    */
-  protected async getFileIdsByName(filename: string, directoryId: string): Promise<string[]> {
+  public async getFileIdsByName(filename: string, directoryId: string): Promise<string[]> {
     const result = await this.api.files.list({
       q: `mimeType != 'application/vnd.google-apps.folder' and '${directoryId}' in parents and name = '${filename}'`,
       fields: 'nextPageToken, files(id, name)',
@@ -89,7 +89,7 @@ export class GoogleDriveUtils {
    * @param filename
    * @param directoryId
    */
-  protected async createGoogleSheetsFile(filename: string, directoryId: string): Promise<string | null | undefined> {
+  public async createGoogleSheetsFile(filename: string, directoryId: string): Promise<string | null | undefined> {
     return (await this.api.files.create({
       fields: 'id',
       requestBody: {
@@ -104,7 +104,7 @@ export class GoogleDriveUtils {
    * Removes file from the Google Drive.
    * @param id
    */
-  protected async deleteFile(id: string): Promise<void> {
+  public async deleteFile(id: string): Promise<void> {
     await this.api.files.delete({
       fields: 'id',
       fileId: id
@@ -116,7 +116,7 @@ export class GoogleDriveUtils {
    * @param filename file name to delete
    * @param directoryId directory to search files in
    */
-  protected async deleteExistingFiles(filename: string, directoryId: string): Promise<void> {
+  public async deleteExistingFiles(filename: string, directoryId: string): Promise<void> {
     const fileIds = await this.getFileIdsByName(filename, directoryId);
     for (const fileId of fileIds ?? []) {
       // eslint-disable-next-line no-await-in-loop
