@@ -2,7 +2,6 @@ import {drive_v3, google} from 'googleapis';
 import {drive} from 'googleapis/build/src/apis/drive';
 import {GoogleAuth, GoogleAuthOptions, OAuth2Client} from 'google-auth-library';
 import {Readable} from 'stream';
-import {URL} from 'url';
 import fetch from 'node-fetch';
 
 export class GoogleDriveUtils {
@@ -148,29 +147,39 @@ export class GoogleDriveUtils {
    * @param maxWidth
    * @param maxHeight
    */
-  public async resizeImage(readStream: Readable, filename: string, directoryId: string, maxWidth?: number, maxHeight?: number): Promise<NodeJS.ReadableStream> {
-    const result = await this.api.files.create({
+  public async resizeImage(
+    readStream: Readable,
+    filename: string,
+    directoryId: string,
+    maxWidth?: number,
+    maxHeight?: number
+  ): Promise<NodeJS.ReadableStream> {
+    const fileId = (await this.api.files.create({
       media: {
         body: readStream
       },
-      fields: 'id, thumbnailLink',
+      fields: 'id',
       requestBody: {
         name: filename,
         parents: [directoryId]
       }
-    });
-
-    const fileId = result?.data?.id;
+    }))?.data?.id;
     if (!fileId) {
-      throw new Error('File not uploaded.');
+      throw new Error('File was not uploaded. File ID is not set.');
     }
 
-    const {thumbnailLink} = result.data;
+    console.log(`File ID: ${fileId}`);
+
+    let thumbnailLink = (await this.api.files.get({
+      fileId,
+      fields: 'thumbnailLink'
+    }))?.data?.thumbnailLink;
     if (!thumbnailLink) {
       throw new Error('Thumbnail link is empty');
     }
 
-    const url = new URL(thumbnailLink);
+    console.log(`Thumbnail Link: ${thumbnailLink}`);
+
     let szValue = '';
     if (maxWidth && maxHeight) {
       szValue = `w${maxWidth}-h${maxHeight}`;
@@ -181,9 +190,18 @@ export class GoogleDriveUtils {
     }
 
     if (szValue) {
-      url.searchParams.set('sz', szValue);
+      thumbnailLink = thumbnailLink.replace(/=s\d+/g, `=${szValue}`);
     }
 
-    return (await fetch(url)).body;
+    console.log('Fetching thumbnail from Google Drive');
+    const resultStream = (await fetch(thumbnailLink)).body;
+
+    // Delete file on stream end
+    resultStream.on('end', async () => {
+      console.log(`Delete file: ${fileId}`);
+      await this.deleteFile(fileId);
+    });
+
+    return resultStream;
   }
 }
