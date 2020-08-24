@@ -2,6 +2,8 @@ import {drive_v3, google} from 'googleapis';
 import {drive} from 'googleapis/build/src/apis/drive';
 import {GoogleAuth, GoogleAuthOptions, OAuth2Client} from 'google-auth-library';
 import {Readable} from 'stream';
+import {URL} from 'url';
+import fetch from 'node-fetch';
 
 export class GoogleDriveUtils {
   /**
@@ -136,5 +138,52 @@ export class GoogleDriveUtils {
     }, {responseType: 'stream'});
 
     return result.data;
+  }
+
+  /**
+   * Resizes image using google drive.
+   * @param readStream
+   * @param filename
+   * @param directoryId
+   * @param maxWidth
+   * @param maxHeight
+   */
+  public async resizeImage(readStream: Readable, filename: string, directoryId: string, maxWidth?: number, maxHeight?: number): Promise<NodeJS.ReadableStream> {
+    const result = await this.api.files.create({
+      media: {
+        body: readStream
+      },
+      fields: 'id, thumbnailLink',
+      requestBody: {
+        name: filename,
+        parents: [directoryId]
+      }
+    });
+
+    const fileId = result?.data?.id;
+    if (!fileId) {
+      throw new Error('File not uploaded.');
+    }
+
+    const {thumbnailLink} = result.data;
+    if (!thumbnailLink) {
+      throw new Error('Thumbnail link is empty');
+    }
+
+    const url = new URL(thumbnailLink);
+    let szValue = '';
+    if (maxWidth && maxHeight) {
+      szValue = `w${maxWidth}-h${maxHeight}`;
+    } else if (maxWidth) {
+      szValue = `w${maxWidth}`;
+    } else if (maxHeight) {
+      szValue = `h${maxHeight}`;
+    }
+
+    if (szValue) {
+      url.searchParams.set('sz', szValue);
+    }
+
+    return (await fetch(url)).body;
   }
 }
