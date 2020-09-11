@@ -74,6 +74,8 @@ export class GoogleDriveUtils {
    */
   public async getFileIdsByName(filename: string, directoryId: string): Promise<string[]> {
     const result = await this.api.files.list({
+      includeItemsFromAllDrives: true,
+      supportsAllDrives: true,
       q: `mimeType != 'application/vnd.google-apps.folder' and '${directoryId}' in parents and name = '${filename}'`,
       fields: 'nextPageToken, files(id, name)',
       spaces: 'drive'
