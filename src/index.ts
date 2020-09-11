@@ -67,6 +67,10 @@ export class GoogleDriveUtils {
     return GoogleDriveUtils.instance;
   }
 
+  public getApi(): drive_v3.Drive {
+    return this.api;
+  }
+
   /**
    * Returns list of file IDs for the specified name.
    * @param filename name to search
@@ -82,7 +86,7 @@ export class GoogleDriveUtils {
     });
 
     if (result?.data?.files?.length) {
-      return result.data.files.map(value => value.id as string);
+      return result.data.files.map((value: {[key: string]: unknown}) => value.id as string);
     }
 
     return [];
