@@ -40,7 +40,7 @@ export class GoogleDriveUtils {
   public static async create(googleAuthOptions?: GoogleAuthOptions): Promise<GoogleDriveUtils> {
     // Set default auth scope
     googleAuthOptions = googleAuthOptions ?? {};
-    googleAuthOptions.scopes = googleAuthOptions.scopes ?? ['https://www.googleapis.com/auth/drive.file'];
+    googleAuthOptions.scopes = googleAuthOptions.scopes ?? ['https://www.googleapis.com/auth/drive'];
 
     const auth = await google.auth.getClient(googleAuthOptions);
     return new GoogleDriveUtils(auth);
